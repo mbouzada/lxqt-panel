@@ -29,6 +29,7 @@
 #include "statusnotifierwidget.h"
 #include <QApplication>
 #include <QDebug>
+#include <QDBusConnectionInterface>
 #include "../panel/ilxqtpanelplugin.h"
 
 StatusNotifierWidget::StatusNotifierWidget(ILXQtPanelPlugin *plugin, QWidget *parent) :
@@ -36,8 +37,8 @@ StatusNotifierWidget::StatusNotifierWidget(ILXQtPanelPlugin *plugin, QWidget *pa
     mPlugin(plugin)
 {
     QString dbusName = QString("org.kde.StatusNotifierHost-%1-%2").arg(QApplication::applicationPid()).arg(1);
-    if (!QDBusConnection::sessionBus().registerService(dbusName))
-        qDebug() << QDBusConnection::sessionBus().lastError().message();
+    if (QDBusConnectionInterface::ServiceNotRegistered == QDBusConnection::sessionBus().interface()->registerService(dbusName, QDBusConnectionInterface::DontQueueService).value())
+        qDebug() << "unable to register service for " << dbusName;
 
     mWatcher = new StatusNotifierWatcher;
     mWatcher->RegisterStatusNotifierHost(dbusName);
